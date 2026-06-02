@@ -1,50 +1,88 @@
-# Welcome to your Expo app 👋
+# GM Finance App (`gm_finance`)
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Frontend mobile (Expo/React Native) do GM Finance.
 
-## Get started
+O app consome a API do repositório irmão `gm_back` e oferece:
+- login por telefone em formato `+5511981443833` e senha, com sessão por dispositivo
+- resumo mensal com divisão por categorias
+- cadastro de lançamentos com renda ativa, renda passiva e gasto extra
+- metas de economia com projeção de prazo
+- configurações de faixas percentuais e salário mensal por pessoa
 
-1. Install dependencies
+## Pré-requisitos
 
-   ```bash
-   npm install
-   ```
+- Node.js 22+
+- npm
+- backend `gm_back` rodando e acessível
 
-2. Start the app
+## Variáveis de ambiente
 
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+Use o arquivo de exemplo:
 
 ```bash
-npm run reset-project
+cp .env.example .env
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+Variável obrigatória:
 
-## Learn more
+- `EXPO_PUBLIC_API_URL`: URL base da API (sem barra no final)
+  - local: `http://localhost:3000`
+  - produção (exemplo): `https://api.seudominio.com`
 
-To learn more about developing your project with Expo, look at the following resources:
+## Rodando localmente
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+```bash
+npm install
+npm run start
+```
 
-## Join the community
+Atalhos úteis:
 
-Join our community of developers creating universal apps.
+- `npm run android`
+- `npm run ios`
+- `npm run web`
+- `npm run lint`
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+## Telas principais
+
+- `Início`: resumo mensal por `yearMonth`, saldo geral, splits e status da meta.
+- `Meta`: cria meta com prazo em meses e mostra progresso completo.
+- `Lançamentos`: permite registrar renda ativa, renda passiva e gasto extra, com pessoa dona e mês de referência.
+- `Config`: edição de salário mensal de projeção e faixas percentuais (soma = 100%).
+
+## Contrato com backend
+
+O app está alinhado com os endpoints principais:
+
+- `POST /api/auth/login`
+- `POST /api/auth/refresh`
+- `GET /api/auth/me`
+- `GET /api/users`
+- `PATCH /api/users/:id` (monthlySalary)
+- `GET/PUT /api/users/:id/allocation-rules`
+- `POST /api/revenue-entries`
+- `POST /api/extra-transactions`
+- `GET/POST/PATCH /api/savings-goals`
+- `GET /api/users/:id/summary?yearMonth=YYYY-MM`
+
+Para validar contrato e exemplos de payload, use o Swagger da API:
+
+- `http://localhost:3000/docs` (quando `gm_back` estiver local)
+
+## Build Android (checklist)
+
+1. Definir `EXPO_PUBLIC_API_URL` para a URL pública da API.
+2. Validar no app:
+   - login
+   - resumo
+   - metas
+   - lançamentos
+   - configurações
+3. Gerar build Android (APK/AAB) com o fluxo de release adotado no projeto.
+
+## Estrutura rápida
+
+- `app/`: rotas e telas (Expo Router)
+- `src/api/`: clientes HTTP e tipos
+- `src/context/`: autenticação e sessão local
+- `components/ui/`: componentes visuais reutilizáveis
