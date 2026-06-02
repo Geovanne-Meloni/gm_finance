@@ -9,7 +9,13 @@ import {
 import { cn } from "@/lib/cn";
 
 interface ButtonProps extends TouchableOpacityProps {
-  variant?: "default" | "destructive" | "outline" | "secondary" | "ghost" | "link";
+  variant?:
+    | "default"
+    | "destructive"
+    | "outline"
+    | "secondary"
+    | "ghost"
+    | "link";
   size?: "default" | "sm" | "lg" | "icon";
   label?: string;
 }

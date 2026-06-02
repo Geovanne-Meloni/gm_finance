@@ -4,6 +4,7 @@ import { getCurrentSession, tryRefreshSession } from './session';
 export async function fetchApi<T>(endpoint: string, options?: RequestInit): Promise<T> {
   const url = `${API_URL}${endpoint}`;
   const session = getCurrentSession();
+  const isAuthRefreshEndpoint = endpoint === '/api/auth/refresh';
   const makeRequest = async (accessToken?: string | null) =>
     fetch(url, {
       cache: 'no-store',
@@ -17,7 +18,7 @@ export async function fetchApi<T>(endpoint: string, options?: RequestInit): Prom
 
   let response = await makeRequest(session?.accessToken ?? null);
 
-  if (response.status === 401 && session?.refreshToken) {
+  if (!isAuthRefreshEndpoint && response.status === 401 && session?.refreshToken) {
     const refreshed = await tryRefreshSession();
     if (refreshed?.accessToken) {
       response = await makeRequest(refreshed.accessToken);

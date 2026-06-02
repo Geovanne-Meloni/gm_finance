@@ -13,6 +13,19 @@ export async function loginWithPhone(data: {
   });
 }
 
+export async function registerWithPhone(data: {
+  name: string;
+  phone: string;
+  password: string;
+  deviceId: string;
+  deviceName?: string;
+}): Promise<AuthSession> {
+  return fetchApi<AuthSession>("/api/auth/register", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
 export async function refreshDeviceSession(data: {
   deviceId: string;
   refreshToken: string;

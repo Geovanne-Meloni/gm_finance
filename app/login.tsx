@@ -1,69 +1,98 @@
-import React, { useState } from 'react';
-import { View, TextInput, Alert, ActivityIndicator } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Text } from '@/components/ui/Text';
-import { Button } from '@/components/ui/Button';
-import { useAuth } from '@/src/context/AuthContext';
-import { useRouter } from 'expo-router';
+import React, { useState } from "react";
+import {
+  View,
+  TextInput,
+  ActivityIndicator,
+  TouchableOpacity,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { Text } from "@/components/ui/Text";
+import { Button } from "@/components/ui/Button";
+import { useAuth } from "@/src/context/AuthContext";
+import { useRouter } from "expo-router";
+import { useCustomAlert } from "@/src/context/CustomAlertContext";
 
 export default function LoginScreen() {
-  const [phone, setPhone] = useState('');
-  const [password, setPassword] = useState('');
+  const [phone, setPhone] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
   const router = useRouter();
+  const { showAlert } = useCustomAlert();
 
   const handleLogin = async () => {
     if (!phone.trim()) {
-      return Alert.alert('Aviso', 'Por favor, digite seu telefone.');
+      return showAlert({
+        title: "Aviso",
+        message: "Por favor, digite seu telefone.",
+        type: "info",
+      });
     }
     if (!password.trim()) {
-      return Alert.alert('Aviso', 'Por favor, digite sua senha.');
+      return showAlert({
+        title: "Aviso",
+        message: "Por favor, digite sua senha.",
+        type: "info",
+      });
     }
 
     setLoading(true);
     try {
       await login(phone.trim(), password);
-      router.replace('/(tabs)');
+      router.replace("/(drawer)");
     } catch (err: any) {
-      Alert.alert('Erro', err.message || 'Falha ao fazer login');
+      showAlert({
+        title: "Erro",
+        message: err.message || "Falha ao fazer login",
+        type: "error",
+      });
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-slate-50 justify-center p-6">
+    <SafeAreaView className="flex-1 bg-background justify-center px-6">
       <View className="w-full max-w-md mx-auto">
-        <Text className="text-4xl font-bold text-center mb-2 text-slate-900">GM Finance</Text>
-        <Text className="text-slate-500 text-center mb-10 text-lg">
-          Faça login para acessar seu cofre
-        </Text>
+        <View className="mb-12">
+          <Text className="text-5xl font-sansBold text-white mb-2">
+            Welcome<Text className="text-primary">.</Text>
+          </Text>
+          <Text className="text-muted text-lg font-sans">
+            Acesse sua conta para continuar
+          </Text>
+        </View>
 
         <View className="mb-6">
-          <Text className="text-sm font-medium mb-2 text-slate-700">Telefone</Text>
+          <Text className="text-sm font-sansBold text-muted uppercase tracking-wider mb-2 ml-2">
+            Telefone
+          </Text>
           <TextInput
-            className="border border-slate-300 rounded-md p-4 bg-white text-lg text-slate-900"
+            className="border-2 border-surfaceHighlight rounded-[24px] p-5 bg-surface text-white text-lg font-mono focus:border-primary"
             placeholder="+5511981443833"
-            placeholderTextColor="#94a3b8"
+            placeholderTextColor="#525252"
             keyboardType="phone-pad"
             autoCorrect={false}
             value={phone}
             onChangeText={setPhone}
+            selectionColor="#F9D16B"
           />
         </View>
 
-        <View className="mb-8">
-          <Text className="text-sm font-medium mb-2 text-slate-700">Senha</Text>
+        <View className="mb-10">
+          <Text className="text-sm font-sansBold text-muted uppercase tracking-wider mb-2 ml-2">
+            Senha
+          </Text>
           <TextInput
-            className="border border-slate-300 rounded-md p-4 bg-white text-lg text-slate-900"
-            placeholder="123456"
-            placeholderTextColor="#94a3b8"
+            className="border-2 border-surfaceHighlight rounded-[24px] p-5 bg-surface text-white text-lg font-mono focus:border-primary"
+            placeholder="••••••"
+            placeholderTextColor="#525252"
             secureTextEntry
             autoCapitalize="none"
             autoCorrect={false}
             value={password}
             onChangeText={setPassword}
+            selectionColor="#F9D16B"
           />
         </View>
 
@@ -71,11 +100,31 @@ export default function LoginScreen() {
           variant="default"
           onPress={handleLogin}
           disabled={loading || !phone.trim() || !password.trim()}
-          className="w-full rounded-lg px-5 py-3.5 bg-slate-900"
-          label={loading ? undefined : 'Entrar'}
+          className="w-full rounded-[34px] p-5 bg-primary overflow-hidden"
+          style={{
+            shadowColor: "#F9D16B",
+            shadowOpacity: 0.5,
+            shadowRadius: 20,
+            shadowOffset: { width: 0, height: 4 },
+          }}
         >
-          {loading ? <ActivityIndicator color="#ffffff" /> : null}
+          {loading ? (
+            <ActivityIndicator color="#080808" />
+          ) : (
+            <Text className="text-[#080808] text-center font-sansBold text-lg">
+              Entrar
+            </Text>
+          )}
         </Button>
+
+        <View className="mt-8 flex-row justify-center items-center">
+          <Text className="text-muted font-sans mr-2">
+            Ainda não tem conta?
+          </Text>
+          <TouchableOpacity onPress={() => router.push("/register")}>
+            <Text className="text-accentPurple font-sansBold">Cadastre-se</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </SafeAreaView>
   );
