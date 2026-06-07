@@ -3,9 +3,6 @@ import { PlusCircle, Save, Trash2 } from "lucide-react-native";
 import React, { useCallback, useMemo, useState } from "react";
 import {
   ActivityIndicator,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
   TextInput,
   TouchableOpacity,
   View,
@@ -13,6 +10,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { Button } from "@/components/ui/Button";
+import { KeyboardScrollView } from "@/components/ui/KeyboardScrollView";
 import { Text } from "@/components/ui/Text";
 import {
   cancelRecurringIncome,
@@ -321,17 +319,11 @@ export default function SettingsScreen() {
       className="flex-1 bg-background relative"
       edges={["left", "right", "bottom"]}
     >
-      <KeyboardAvoidingView
-        className="flex-1"
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        keyboardVerticalOffset={Platform.OS === "ios" ? 100 : 0}
+      <KeyboardScrollView
+        className="flex-1 px-6 pt-4"
+        contentContainerStyle={{ paddingBottom: 100 }}
       >
-        <ScrollView
-          className="flex-1 px-6 pt-4"
-          keyboardShouldPersistTaps="handled"
-          contentContainerStyle={{ paddingBottom: 100 }}
-        >
-          <View className="bg-surface rounded-[34px] p-6 mb-8 border border-surfaceHighlight">
+        <View className="bg-surface rounded-[34px] p-6 mb-8 border border-surfaceHighlight">
             <Text className="text-xl font-sansBold text-white tracking-wide mb-4">
               BIOMETRIA
             </Text>
@@ -364,9 +356,9 @@ export default function SettingsScreen() {
                 </Text>
               </Button>
             )}
-          </View>
+        </View>
 
-          <View className="mb-8">
+        <View className="mb-8">
             <Text className="text-sm font-sansBold text-muted uppercase tracking-wider mb-4 ml-2">
               Pessoa
             </Text>
@@ -389,9 +381,9 @@ export default function SettingsScreen() {
                 </TouchableOpacity>
               ))}
             </View>
-          </View>
+        </View>
 
-          <View className="bg-surface rounded-[34px] p-6 mb-8 border border-surfaceHighlight">
+        <View className="bg-surface rounded-[34px] p-6 mb-8 border border-surfaceHighlight">
             <Text className="text-xl font-sansBold text-white tracking-wide mb-6">
               SALÁRIO MENSAL
             </Text>
@@ -427,9 +419,9 @@ export default function SettingsScreen() {
                 </View>
               )}
             </Button>
-          </View>
+        </View>
 
-          <View className="bg-surface rounded-[34px] p-6 mb-8 border border-surfaceHighlight">
+        <View className="bg-surface rounded-[34px] p-6 mb-8 border border-surfaceHighlight">
             <Text className="text-xl font-sansBold text-white tracking-wide mb-2">
               GASTOS RECORRENTES E GUARDADO
             </Text>
@@ -635,9 +627,9 @@ export default function SettingsScreen() {
                 </View>
               )}
             </Button>
-          </View>
+        </View>
 
-          <View className="bg-surface rounded-[34px] p-6 mb-8 border border-surfaceHighlight">
+        <View className="bg-surface rounded-[34px] p-6 mb-8 border border-surfaceHighlight">
             <Text className="text-xl font-sansBold text-white tracking-wide mb-2">
               RENDAS PASSIVAS RECORRENTES
             </Text>
@@ -691,9 +683,8 @@ export default function SettingsScreen() {
                 </View>
               ))
             )}
-          </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
+        </View>
+      </KeyboardScrollView>
     </SafeAreaView>
   );
 }

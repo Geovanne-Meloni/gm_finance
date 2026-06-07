@@ -2,9 +2,6 @@ import { ArrowDownCircle, ArrowUpCircle, Repeat, X } from "lucide-react-native";
 import React, { useCallback, useMemo, useState } from "react";
 import {
   ActivityIndicator,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
   TextInput,
   TouchableOpacity,
   View,
@@ -13,6 +10,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useFocusEffect, useRouter } from "expo-router";
 
 import { Button } from "@/components/ui/Button";
+import { KeyboardScrollView } from "@/components/ui/KeyboardScrollView";
 import { Text } from "@/components/ui/Text";
 import {
   createExtraTransaction,
@@ -168,11 +166,7 @@ export default function AddTransactionScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-background relative">
-      <KeyboardAvoidingView
-        className="flex-1"
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        keyboardVerticalOffset={Platform.OS === "ios" ? 20 : 0}
-      >
+      <View className="flex-1">
         <View className="flex-row justify-between items-center px-6 pt-4 pb-2">
           <Text className="text-2xl font-sansBold text-white tracking-wide">
             Novo Lançamento
@@ -185,9 +179,9 @@ export default function AddTransactionScreen() {
           </TouchableOpacity>
         </View>
 
-        <ScrollView
+        <KeyboardScrollView
           className="flex-1 px-6 pt-6"
-          keyboardShouldPersistTaps="handled"
+          keyboardVerticalOffset={20}
           contentContainerStyle={{ paddingBottom: 80 }}
         >
           <View className="mb-8">
@@ -388,8 +382,8 @@ export default function AddTransactionScreen() {
               </Text>
             )}
           </Button>
-        </ScrollView>
-      </KeyboardAvoidingView>
+        </KeyboardScrollView>
+      </View>
     </SafeAreaView>
   );
 }

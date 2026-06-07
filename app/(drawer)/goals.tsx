@@ -8,16 +8,14 @@ import {
 import React, { useCallback, useMemo, useState } from "react";
 import {
   ActivityIndicator,
-  KeyboardAvoidingView,
-  Platform,
   RefreshControl,
-  ScrollView,
   TextInput,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { Button } from "@/components/ui/Button";
+import { KeyboardScrollView } from "@/components/ui/KeyboardScrollView";
 import { Progress } from "@/components/ui/Progress";
 import { Text } from "@/components/ui/Text";
 import {
@@ -187,24 +185,18 @@ export default function GoalsScreen() {
       className="flex-1 bg-background relative"
       edges={["left", "right", "bottom"]}
     >
-      <KeyboardAvoidingView
-        className="flex-1"
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        keyboardVerticalOffset={Platform.OS === "ios" ? 100 : 0}
+      <KeyboardScrollView
+        className="flex-1 px-6 pt-4"
+        contentContainerStyle={{ paddingBottom: 100 }}
+        refreshControl={
+          <RefreshControl
+            refreshing={loading && goals.length > 0}
+            onRefresh={loadData}
+            tintColor="#F9D16B"
+          />
+        }
       >
-        <ScrollView
-          className="flex-1 px-6 pt-4"
-          keyboardShouldPersistTaps="handled"
-          contentContainerStyle={{ paddingBottom: 100 }}
-          refreshControl={
-            <RefreshControl
-              refreshing={loading && goals.length > 0}
-              onRefresh={loadData}
-              tintColor="#F9D16B"
-            />
-          }
-        >
-          <View className="bg-surface rounded-[34px] p-6 mb-8 border border-surfaceHighlight">
+        <View className="bg-surface rounded-[34px] p-6 mb-8 border border-surfaceHighlight">
             <Text className="text-xl font-sansBold text-white tracking-wide mb-6">
               NOVA META
             </Text>
@@ -260,24 +252,24 @@ export default function GoalsScreen() {
                 </View>
               )}
             </Button>
+        </View>
+
+        <Text className="text-xl font-sansBold text-white tracking-widest uppercase mb-4 ml-2">
+          Minhas Metas
+        </Text>
+
+        {error && (
+          <View className="mb-6 p-4 rounded-[24px] bg-red-500/10 border border-red-500/50">
+            <Text className="text-red-500 font-sansBold">{error}</Text>
           </View>
+        )}
 
-          <Text className="text-xl font-sansBold text-white tracking-widest uppercase mb-4 ml-2">
-            Minhas Metas
+        {goals.length === 0 ? (
+          <Text className="text-muted text-center py-4 font-sans">
+            Nenhuma meta configurada ainda.
           </Text>
-
-          {error && (
-            <View className="mb-6 p-4 rounded-[24px] bg-red-500/10 border border-red-500/50">
-              <Text className="text-red-500 font-sansBold">{error}</Text>
-            </View>
-          )}
-
-          {goals.length === 0 ? (
-            <Text className="text-muted text-center py-4 font-sans">
-              Nenhuma meta configurada ainda.
-            </Text>
-          ) : (
-            goals.map((goal) => {
+        ) : (
+          goals.map((goal) => {
               const isPrimary = summary?.primaryGoal?.id === goal.id;
               const savingsSplit = summary?.splits.find(
                 (s) => s.kind === "SAVINGS",
@@ -416,10 +408,9 @@ export default function GoalsScreen() {
                   </View>
                 </View>
               );
-            })
-          )}
-        </ScrollView>
-      </KeyboardAvoidingView>
+          })
+        )}
+      </KeyboardScrollView>
     </SafeAreaView>
   );
 }
