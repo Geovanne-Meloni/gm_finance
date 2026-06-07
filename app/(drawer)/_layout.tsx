@@ -1,4 +1,5 @@
 import { Drawer } from "expo-router/drawer";
+import { useRouter } from "expo-router";
 import {
   Home,
   Target,
@@ -6,14 +7,22 @@ import {
   Settings,
   Menu,
   LogOut,
+  MessageSquare,
 } from "lucide-react-native";
-import React from "react";
+import React, { useEffect } from "react";
 import { Text } from "@/components/ui/Text";
 import { TouchableOpacity } from "react-native";
 import { useAuth } from "@/src/context/AuthContext";
 
 export default function DrawerLayout() {
-  const { logout } = useAuth();
+  const { logout, userId, isLoading } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!isLoading && !userId) {
+      router.replace("/login");
+    }
+  }, [isLoading, router, userId]);
 
   return (
     <Drawer
@@ -71,6 +80,16 @@ export default function DrawerLayout() {
           title: "TRANSAÇÕES",
           drawerIcon: ({ color, size }) => (
             <ListPlus size={size} color={color} />
+          ),
+        }}
+      />
+      <Drawer.Screen
+        name="chat"
+        options={{
+          drawerLabel: "Chat Bot",
+          title: "CHAT BOT",
+          drawerIcon: ({ color, size }) => (
+            <MessageSquare size={size} color={color} />
           ),
         }}
       />

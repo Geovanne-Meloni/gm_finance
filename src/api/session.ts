@@ -2,6 +2,7 @@ import type { AuthSession } from "./types";
 
 let currentSession: AuthSession | null = null;
 let refreshHandler: (() => Promise<AuthSession | null>) | null = null;
+let refreshInFlight: Promise<AuthSession | null> | null = null;
 
 export function getCurrentSession(): AuthSession | null {
   return currentSession;
@@ -17,5 +18,10 @@ export function setSessionRefreshHandler(handler: (() => Promise<AuthSession | n
 
 export async function tryRefreshSession(): Promise<AuthSession | null> {
   if (!refreshHandler) return null;
-  return refreshHandler();
+  if (!refreshInFlight) {
+    refreshInFlight = refreshHandler().finally(() => {
+      refreshInFlight = null;
+    });
+  }
+  return refreshInFlight;
 }

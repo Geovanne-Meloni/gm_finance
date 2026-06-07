@@ -10,6 +10,8 @@ export interface AllocationRule {
   id: string;
   userId: string;
   label: string;
+  kind: "EXPENSE" | "SAVINGS";
+  fixedAmount: string;
   percent: number;
 }
 
@@ -26,6 +28,7 @@ export interface SavingsGoal {
 
 export interface Split {
   label: string;
+  kind: "EXPENSE" | "SAVINGS" | "FREE";
   percent: number;
   plannedAmount: string;
   spentAmount: string;
@@ -53,7 +56,11 @@ export interface RevenueEntry {
   yearMonth: string;
   title: string;
   revenueType: RevenueType;
+  isRecurring: boolean;
+  isActive: boolean;
 }
+
+export interface RecurringIncome extends RevenueEntry {}
 
 export interface ExtraTransaction {
   id: string;
@@ -72,4 +79,19 @@ export interface AuthSession {
   sessionId: string;
   deviceId: string;
   user: User;
+}
+
+export interface WhatsappQueryRequest {
+  remoteJid: string;
+  message: string;
+  yearMonth?: string;
+}
+
+export interface WhatsappQueryResponse {
+  remoteJid: string;
+  phone: string;
+  userId: string;
+  intent: string;
+  toolName: string | null;
+  answer: string;
 }

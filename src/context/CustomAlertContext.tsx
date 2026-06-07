@@ -44,7 +44,7 @@ export function CustomAlertProvider({ children }: { children: ReactNode }) {
         animationType="fade"
         onRequestClose={hideAlert}
       >
-        <View className="flex-1 bg-black/80 justify-center items-center px-6">
+        <View className="flex-1 bg-black/70 justify-center items-center px-6">
           <View className="bg-surface w-full rounded-[34px] p-6 border border-surfaceHighlight items-center"
             style={{
               shadowColor: options.type === 'error' ? '#ff4d4d' : options.type === 'success' ? '#00e57a' : '#F9D16B',

@@ -4,6 +4,8 @@ Frontend mobile (Expo/React Native) do GM Finance.
 
 O app consome a API do repositório irmão `gm_back` e oferece:
 - login por telefone em formato `+5511981443833` e senha, com sessão por dispositivo
+- renovação de sessão com `accessToken` curto e `refreshToken` por dispositivo
+- opção de login/renovação com biometria do aparelho após habilitação pelo usuário
 - resumo mensal com divisão por categorias
 - cadastro de lançamentos com renda ativa, renda passiva e gasto extra
 - metas de economia com projeção de prazo
@@ -48,7 +50,14 @@ Atalhos úteis:
 - `Início`: resumo mensal por `yearMonth`, saldo geral, splits e status da meta.
 - `Meta`: cria meta com prazo em meses e mostra progresso completo.
 - `Lançamentos`: permite registrar renda ativa, renda passiva e gasto extra, com pessoa dona e mês de referência.
-- `Config`: edição de salário mensal de projeção e faixas percentuais (soma = 100%).
+- `Config`: edição de salário mensal de projeção, faixas percentuais (soma = 100%) e biometria local.
+
+## Sessão e biometria
+
+- o app usa `accessToken` para chamadas autenticadas e tenta renovar a sessão com `refreshToken` vinculado ao dispositivo
+- se a biometria estiver habilitada, a renovação de sessão pode exigir digital ou reconhecimento facial
+- após o primeiro login/registro no dispositivo, o dashboard pode oferecer um modal para ativar biometria
+- se a sessão expirar e houver biometria habilitada, a tela de login passa a exibir a opção de entrar com biometria
 
 ## Contrato com backend
 

@@ -15,7 +15,7 @@ export async function getUserAllocationRules(id: string): Promise<AllocationRule
 
 export async function updateUserAllocationRules(
   id: string,
-  rules: { label: string; percent: number }[]
+  rules: { label: string; kind: "EXPENSE" | "SAVINGS"; fixedAmount: number }[]
 ): Promise<AllocationRule[]> {
   return fetchApi<AllocationRule[]>(`/api/users/${id}/allocation-rules`, {
     method: 'PUT',

@@ -3,32 +3,30 @@ import { useRouter } from "expo-router";
 import {
   ArrowDownCircle,
   ArrowUpCircle,
-  LogOut,
   Plus,
   Target,
-  Menu,
 } from "lucide-react-native";
 import React, { useCallback, useRef, useState } from "react";
 import {
   ActivityIndicator,
+  Modal,
   RefreshControl,
   ScrollView,
-  TextInput,
+  Pressable,
   View,
   TouchableOpacity,
 } from "react-native";
 import { PieChart } from "react-native-gifted-charts";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useNavigation } from "expo-router";
-import { DrawerActions } from "@react-navigation/native";
 
 import { Button } from "@/components/ui/Button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Progress } from "@/components/ui/Progress";
 import { Text } from "@/components/ui/Text";
 import { getUserSummary } from "@/src/api/summary";
 import { Summary } from "@/src/api/types";
 import { useAuth } from "@/src/context/AuthContext";
+import { useCustomAlert } from "@/src/context/CustomAlertContext";
+import { formatCurrency } from "@/src/utils/format";
 
 const SPLIT_CHART_COLORS = [
   "#F9D16B", // Neon Yellow
@@ -41,19 +39,22 @@ const SPLIT_CHART_COLORS = [
 
 export default function HomeScreen() {
   const [summary, setSummary] = useState<Summary | null>(null);
-  const [yearMonth, setYearMonth] = useState(
-    new Date().toISOString().slice(0, 7),
-  );
-  const [yearMonthInput, setYearMonthInput] = useState(
-    new Date().toISOString().slice(0, 7),
-  );
+  const [yearMonth] = useState(new Date().toISOString().slice(0, 7));
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { userId, logout } = useAuth();
+  const {
+    userId,
+    logout,
+    shouldPromptBiometricOptIn,
+    enableBiometric,
+    dismissBiometricPrompt,
+    isBiometricAvailable,
+  } = useAuth();
   const router = useRouter();
-  const navigation = useNavigation();
   const summaryRef = useRef<Summary | null>(null);
+  const [biometricSaving, setBiometricSaving] = useState(false);
+  const { showAlert } = useCustomAlert();
   summaryRef.current = summary;
 
   const loadSummary = useCallback(async () => {
@@ -104,15 +105,46 @@ export default function HomeScreen() {
   }
 
   const totalRevenue = Number(summary.totalRevenueForSplit);
-  const totalExpense = Number(summary.extraExpenseTotal);
-  const balance = totalRevenue - totalExpense;
+  const totalDistributedOutflow = summary.splits
+    .filter((split) => split.kind !== "FREE")
+    .reduce((sum, split) => sum + Number(split.plannedAmount), 0);
+  const totalExpense =
+    totalDistributedOutflow + Number(summary.extraExpenseTotal);
+  const freeSplit =
+    summary.splits.find((split) => split.kind === "FREE") ?? null;
+  const savingsSplit =
+    summary.splits.find((split) => split.kind === "SAVINGS") ?? null;
+
+  const balance = freeSplit
+    ? Number(freeSplit.amount)
+    : totalRevenue - totalExpense;
+
+  const savingsAmount = savingsSplit ? Number(savingsSplit.amount) : 0;
 
   const pieData = summary.splits.map((split, index) => ({
-    value: Number(split.amount),
+    value: Math.max(0, Number(split.amount)),
     color: SPLIT_CHART_COLORS[index % SPLIT_CHART_COLORS.length],
-    text: `${split.percent}%`,
-    textColor: "#080808",
   }));
+
+  const handleEnableBiometric = async () => {
+    setBiometricSaving(true);
+    try {
+      await enableBiometric();
+      showAlert({
+        title: "Sucesso",
+        message: "Biometria habilitada para proteger sua sessão.",
+        type: "success",
+      });
+    } catch (err: any) {
+      showAlert({
+        title: "Erro",
+        message: err.message || "Não foi possível habilitar a biometria.",
+        type: "error",
+      });
+    } finally {
+      setBiometricSaving(false);
+    }
+  };
 
   return (
     <SafeAreaView
@@ -138,10 +170,10 @@ export default function HomeScreen() {
 
         <View className="mb-8 items-center">
           <Text className="text-muted font-sans text-lg mb-1 tracking-wider uppercase">
-            Your Balance
+            Saldo livre
           </Text>
           <Text className="text-[42px] font-sansBold text-white tracking-tight">
-            R$ {balance.toFixed(2)}
+            {formatCurrency(balance)}
           </Text>
         </View>
 
@@ -155,7 +187,7 @@ export default function HomeScreen() {
                 Rendas
               </Text>
               <Text className="text-white font-sansBold text-lg">
-                R$ {totalRevenue.toFixed(0)}
+                {formatCurrency(totalRevenue)}
               </Text>
             </View>
           </View>
@@ -169,7 +201,7 @@ export default function HomeScreen() {
                 Saídas
               </Text>
               <Text className="text-white font-sansBold text-lg">
-                R$ {totalExpense.toFixed(0)}
+                {formatCurrency(totalExpense)}
               </Text>
             </View>
           </View>
@@ -184,11 +216,8 @@ export default function HomeScreen() {
               <PieChart
                 data={pieData}
                 donut
-                showText
-                textColor="#080808"
                 radius={110}
                 innerRadius={70}
-                textSize={14}
                 backgroundColor="transparent"
                 innerCircleColor="#1A1A1A"
               />
@@ -208,12 +237,12 @@ export default function HomeScreen() {
                             ],
                         }}
                       />
-                      <Text className="text-white font-sansBold text-base">
+                      <Text className="text-white font-sansBold text-base capitalize">
                         {split.label}
                       </Text>
                     </View>
                     <Text className="text-muted font-mono text-sm">
-                      R$ {Number(split.amount).toFixed(2)}
+                      {split.percent.toFixed(1)}% • {formatCurrency(Number(split.amount))}
                     </Text>
                   </View>
                 ))}
@@ -232,31 +261,48 @@ export default function HomeScreen() {
               <Text className="text-lg font-sansBold text-white tracking-wide">
                 Objetivo Principal
               </Text>
-              <Target size={24} color="#00f0ff" />
+              <View className="flex-row items-center">
+                <Text className="text-accentPurple font-monoBold text-xs mr-2">
+                  {(Number(summary.primaryGoal.targetAmount) <= 0
+                    ? 0
+                    : Math.min(
+                        100,
+                        ((Number(summary.primaryGoal.currentAmount) +
+                          savingsAmount) /
+                          Number(summary.primaryGoal.targetAmount)) *
+                          100,
+                      )
+                  ).toFixed(1)}
+                  %
+                </Text>
+                <Target size={20} color="#00f0ff" />
+              </View>
             </View>
             <Text className="text-accentPurple font-sansBold text-xl mb-4">
               {summary.primaryGoal.title}
             </Text>
             <Progress
-              value={Number(summary.primaryGoal.currentAmount)}
+              value={Number(summary.primaryGoal.currentAmount) + savingsAmount}
               max={Number(summary.primaryGoal.targetAmount)}
               indicatorClassName="bg-accentPurple"
             />
             <View className="flex-row justify-between mt-4">
               <View>
                 <Text className="text-muted font-sans text-xs uppercase mb-1">
-                  Atual
+                  Atual (+ Mês)
                 </Text>
                 <Text className="text-white font-mono">
-                  R$ {Number(summary.primaryGoal.currentAmount).toFixed(0)}
+                  {formatCurrency(
+                    Number(summary.primaryGoal.currentAmount) + savingsAmount,
+                  )}
                 </Text>
               </View>
               <View className="items-end">
                 <Text className="text-muted font-sans text-xs uppercase mb-1">
-                  Meta
+                  Alvo
                 </Text>
                 <Text className="text-white font-mono">
-                  R$ {Number(summary.primaryGoal.targetAmount).toFixed(0)}
+                  {formatCurrency(summary.primaryGoal.targetAmount)}
                 </Text>
               </View>
             </View>
@@ -279,6 +325,44 @@ export default function HomeScreen() {
           <Plus size={32} color="#080808" />
         </TouchableOpacity>
       </View>
+
+      <Modal
+        animationType="fade"
+        transparent
+        visible={shouldPromptBiometricOptIn && isBiometricAvailable}
+        onRequestClose={dismissBiometricPrompt}
+      >
+        <View className="flex-1 bg-black/70 items-center justify-center px-6">
+          <View className="w-full max-w-md rounded-[32px] bg-surface border border-surfaceHighlight p-6">
+            <Text className="text-white font-sansBold text-2xl mb-3">
+              Habilitar biometria?
+            </Text>
+            <Text className="text-muted font-sans text-base mb-6">
+              Você pode usar digital ou reconhecimento facial para renovar sua
+              sessão com mais segurança, sem digitar a senha toda vez.
+            </Text>
+
+            <Button
+              onPress={handleEnableBiometric}
+              disabled={biometricSaving}
+              className="w-full rounded-[24px] py-4 bg-primary mb-3"
+            >
+              <Text className="text-[#080808] font-sansBold text-center">
+                {biometricSaving ? "Ativando..." : "Ativar agora"}
+              </Text>
+            </Button>
+
+            <Pressable
+              onPress={dismissBiometricPrompt}
+              className="w-full rounded-[24px] py-4 border border-surfaceHighlight"
+            >
+              <Text className="text-white font-sansBold text-center">
+                Decidir depois
+              </Text>
+            </Pressable>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }

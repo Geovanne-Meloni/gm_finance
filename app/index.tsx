@@ -1,6 +1,6 @@
 import { useRouter } from "expo-router";
 import React, { useEffect } from "react";
-import { View } from "react-native";
+import { ScrollView, View } from "react-native";
 import Animated, { FadeInDown, FadeOutUp } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "@/src/context/AuthContext";
@@ -26,19 +26,21 @@ export default function WelcomeScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-background justify-center items-center">
-      <Animated.View
-        entering={FadeInDown.duration(1000).springify()}
-        exiting={FadeOutUp.duration(500)}
-        className="items-center"
-      >
-        <Text className="text-primary font-bold text-5xl tracking-widest uppercase mb-4 text-center">
-          GM
-        </Text>
-        <Text className="text-white font-medium text-2xl tracking-[4px] text-center uppercase">
-          Finance
-        </Text>
-        <View className="w-24 h-1 bg-accentGreen rounded-full mt-8" />
-      </Animated.View>
+      <ScrollView className="flex-1">
+        <Animated.View
+          entering={FadeInDown.duration(1000).springify()}
+          exiting={FadeOutUp.duration(500)}
+          className="items-center"
+        >
+          <Text className="text-primary font-bold text-5xl tracking-widest uppercase mb-4 text-center">
+            GM
+          </Text>
+          <Text className="text-white font-medium text-2xl tracking-[4px] text-center uppercase">
+            Finance
+          </Text>
+          <View className="w-24 h-1 bg-accentGreen rounded-full mt-8" />
+        </Animated.View>
+      </ScrollView>
     </SafeAreaView>
   );
 }
